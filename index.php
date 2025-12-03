@@ -59,44 +59,59 @@
     </section>
 
     <section class="galeri" style="margin-top:60px;">
-        <h2 style="text-align:center; color:rgba(0, 123, 255, 1); margin-bottom:30px; font-size:2.2em;">
-            <i class="fas fa-images"></i> Galeri Kegiatan Warga
-        </h2>
-        <div class="grid">
-            <?php 
-            // Query mengambil galeri dan nama warga. Jika warga_id=0, nama akan NULL.
-            $gal = $conn->query("SELECT g.*, w.nama FROM galeri g LEFT JOIN warga w ON g.warga_id=w.id ORDER BY g.tanggal DESC LIMIT 12");
-            while($g = $gal->fetch_assoc()): 
-                $img = $g['gambar'] ?? 'default.jpg';
-                if(!file_exists("assets/uploads/".$img)) $img = 'placeholder.jpg';
-                
-                // TAMBAHAN: Logika pengecekan siapa pengupload
-                // Jika kolom 'nama' kosong (NULL), berarti diupload oleh Admin
-                $uploader = $g['nama'];
-                $labelClass = '';
-                
-                if (empty($uploader)) {
-                    $uploader = "Admin / Pengurus RT"; // Set teks jika admin
-                    $labelClass = "color:black; font-weight: bold;"; // Beri warna biru
-                }
-            ?>
+    <h2 style="text-align:center; color:rgba(0, 123, 255, 1); margin-bottom:30px; font-size:2.2em;">
+        <i class="fas fa-images"></i> Galeri Kegiatan Warga
+    </h2>
+    <div class="grid">
+        <?php 
+        // QUERY BARU: Hanya ambil kegiatan yang ADA gambarnya (gambar NOT NULL dan tidak kosong)
+        $gal = $conn->query("
+            SELECT g.*, w.nama 
+            FROM galeri g 
+            LEFT JOIN warga w ON g.warga_id = w.id 
+            WHERE g.gambar IS NOT NULL 
+              AND g.gambar != '' 
+            ORDER BY g.tanggal DESC 
+            LIMIT 12
+        ");
+
+        // Jika tidak ada yang punya foto, tampilkan pesan ramah
+        if ($gal->num_rows == 0): ?>
+            <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#666;">
+                <i class="fas fa-images fa-3x" style="margin-bottom:20px; opacity:0.3;"></i>
+                <p>Belum ada foto kegiatan yang diunggah. <br>
+                   Yuk jadi yang pertama bagikan momen seru bersama warga!</p>
+            </div>
+        <?php endif; ?>
+
+        <?php while($g = $gal->fetch_assoc()): 
+            // Pastikan file benar-benar ada (keamanan tambahan)
+            $img_path = "assets/uploads/" . $g['gambar'];
+            $img = file_exists($img_path) ? $g['gambar'] : 'placeholder.jpg';
+
+            // Logika penulis (Admin atau Warga)
+            $uploader = $g['nama'] ?? "Admin / Pengurus RT";
+            $labelStyle = empty($g['nama']) ? 'color:#007bff; font-weight:bold;' : 'color:#28a745; font-weight:bold;';
+        ?>
             <div class="item" style="background:white;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
-                <img src="assets/uploads/<?= $img ?>" alt="">
+                <img src="assets/uploads/<?= htmlspecialchars($img) ?>" alt="Kegiatan <?= htmlspecialchars($g['judul']) ?>">
                 <div style="padding:15px;">
                     <h4><?= htmlspecialchars($g['judul']) ?></h4>
                     <p style="font-size:0.9em;color:#666;">
-                        <?= substr(htmlspecialchars($g['deskripsi']),0,80) ?>...
+                        <?= substr(htmlspecialchars($g['deskripsi']), 0, 80) ?>...
                     </p>
                     <small>
-                        <i class="fas fa-user"></i> 
-                        <span style="<?= $labelClass ?>"><?= htmlspecialchars($uploader) ?></span> | 
-                        <i class="fas fa-clock"></i> <?= date('d/m/Y', strtotime($g['tanggal'])) ?>
+                        Diposting oleh 
+                        <span style="<?= $labelStyle ?>">
+                            <?= htmlspecialchars($uploader) ?>
+                        </span> | 
+                        <?= date('d/m/Y', strtotime($g['tanggal'])) ?>
                     </small>
                 </div>
             </div>
-            <?php endwhile; ?>
-        </div>
-    </section>
+        <?php endwhile; ?>
+    </div>
+</section>
 </div>
 
 <footer style="background:rgba(3, 65, 132, 1);color:white;text-align:center;padding:40px;margin-top:100px;">
