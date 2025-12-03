@@ -130,7 +130,7 @@ if($user['nik'] === 'admin' || $user['nik'] === '0000000000000000'){
     </div>
 
         <div id="upload" class="tab-content">
-            <h2 style="color:#007bff;">Upload Foto Kegiatan RT</h2>
+            <h2 style="color:#007bff;">Upload Kegiatan RT</h2>
             <?php if(isset($_GET['upload'])): ?><div class="success-msg">Kegiatan berhasil diupload!</div><?php endif; ?>
             <form action="proses/upload_galeri.php" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
@@ -140,7 +140,7 @@ if($user['nik'] === 'admin' || $user['nik'] === '0000000000000000'){
                     <textarea name="deskripsi" placeholder="Ceritakan kegiatan ini..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <input type="file" name="gambar" accept="image/*" required>
+                    <input type="file" name="gambar" accept="image/*">
                 </div>
                 <button type="submit" class="btn-submit">Bagikan ke Warga</button>
             </form>
@@ -182,9 +182,9 @@ if($user['nik'] === 'admin' || $user['nik'] === '0000000000000000'){
                 $pengajuan = $conn->query("SELECT * FROM pengajuan WHERE warga_id='".$user['id']."' ORDER BY tanggal DESC");
                 if($pengajuan->num_rows > 0):
                     while($p = $pengajuan->fetch_assoc()): 
-                        if($p['status'] == 'selesai') {
+                        if($p['status'] == 'Selesai') {
                             $ket = "Sudah Selesai"; $warna = "#27ae60"; $icon = "✓";
-                        } elseif($p['status'] == 'diproses') {
+                        } elseif($p['status'] == 'Diproses') {
                             $ket = "Sedang Diproses"; $warna = "#3498db"; $icon = "⏳";
                         } else {
                             $ket = "Menunggu Konfirmasi"; $warna = "#f39c12"; $icon = "⏱";
